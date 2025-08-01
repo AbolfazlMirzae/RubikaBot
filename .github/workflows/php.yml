@@ -20,14 +20,13 @@ jobs:
     - name: Initialize Composer
       run: |
         composer init \
-        --name="vendor-name/project-name" \
-        --description="My Project" \
-        --author="Your Name <email@example.com>" \
+        --name="RubikaBot" \
+        --description="Rubika Bot for api" \
+        --author="AbolfazlMirzaei <mirzaiabolfazl6@gmail.com>" \
         --type="project" \
         --require="php:^8.0" \
         --license="MIT" \
         --no-interaction
-      
     - name: Validate composer.json and composer.lock
       run: composer validate --strict
 

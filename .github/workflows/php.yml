@@ -20,7 +20,7 @@ jobs:
     - name: Initialize Composer
       run: |
         composer init \
-        --name="RubikaBot" \
+        --name="rubikabot" \
         --description="Rubika Bot for api" \
         --author="AbolfazlMirzaei <mirzaiabolfazl6@gmail.com>" \
         --type="project" \

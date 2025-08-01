@@ -17,8 +17,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: init composer
-      run: composer init
+    - name: Initialize Composer
+      run: |
+        composer init \
+        --name="vendor-name/project-name" \
+        --description="My Project" \
+        --author="Your Name <email@example.com>" \
+        --type="project" \
+        --require="php:^8.0" \
+        --license="MIT" \
+        --no-interaction
       
     - name: Validate composer.json and composer.lock
       run: composer validate --strict

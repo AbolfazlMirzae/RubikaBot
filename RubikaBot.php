@@ -4,6 +4,7 @@ class RubikaBot {
     private string $baseUrl;
     private array $config;
     private array $update = [];
+    private array $handlers = [];
     
     public const CHAT_TYPES = ['User', 'Bot', 'Group', 'Channel'];
     public const BUTTON_TYPES = [
@@ -78,7 +79,9 @@ class RubikaBot {
     string $chat_id,
     string $file_path,
     ?string $caption = null,
-    ?array $keypad = null
+    ?array $chat_keypad = null,
+    ?string $chat_keypad_type = null,
+    ?array $inline_keypad = null
     ): array {
         if (!file_exists($file_path)) {
             throw new InvalidArgumentException("File not found: {$file_path}");
@@ -100,8 +103,13 @@ class RubikaBot {
             $params['text'] = $caption;
         }
     
-        if ($keypad) {
-            $params['inline_keypad'] = $keypad;
+        if ($chat_keypad && $chat_keypad_type && !$inline_keypad) {
+            $params['chat_keypad'] = $chat_keypad;
+            $params['chat_keypad_type'] = $chat_keypad_type;
+        }
+    
+        if ($inline_keypad) {
+            $params['inline_keypad'] = $inline_keypad;
         }
     
         return $this->apiRequest('sendFile', $params);
@@ -276,6 +284,47 @@ class RubikaBot {
         ]);
     }
     
+    public function reply(array $params): array {
+        $this->validateParams($params, ['text']);
+        $defaults = [
+            'text' => '',
+            'chat_id' => $this->getChatId(),
+            'message_id' => $this->getMessageId(),
+            'chat_keypad' => null,
+            'inline_keypad' => null,
+            'chat_keypad_type' => null,
+        ];
+        $params = array_merge($defaults, $params);
+        
+        return $this->sendMessage([
+            'chat_id' => $params['chat_id'],
+            'text' => $params['text'],
+            'reply_to_message_id' => $params['message_id'],
+            'inline_keypad' => $params['inline_keypad'],
+            'chat_keypad' => $params['chat_keypad'],
+            'chat_keypad_type' => $params['chat_keypad_type'],
+        ]);
+    }
+    public function replyFile(array $params): array {
+        $this->validateParams($params, ['path']);
+        $defaults = [
+            'path' => '',
+            'caption' => null,
+            'chat_id' => $this->getChatId(),
+            'inline_keypad' => null,
+            'chat_keypad' => null,
+            'chat_keypad_type' => null,
+        ];
+    
+        $params = array_merge($defaults, $params);
+    
+        return $this->sendFile(
+            $params['chat_id'],
+            $params['path'],
+            $params['caption'],
+            $params['inline_keypad'] ?? $params['chat_keypad'] ?? null
+        );
+    }
     public static function makeSimpleButton(string $id, string $text): array {
         return [
             'id' => $id,
@@ -450,7 +499,68 @@ class RubikaBot {
         return $this->update['update']['new_message']['message_id'] ?? 
                $this->update['inline_message']['message_id'] ?? null;
     }
+    public function filterText(?string $match = null): callable {
+        return function(RubikaBot $bot) use ($match) {
+            $text = $bot->getText();
+            if ($text === null) return false;
+            return $match === null ? true : trim($text) === trim($match);
+        };
+    }
     
+    public function filterCommand(string $command): callable {
+        return function(RubikaBot $bot) use ($command) {
+            $text = $bot->getText();
+            if ($text === null) return false;
+            return strpos(trim('/'.$text), $command) === false;
+        };
+    }
+    public function filterButton(string $button): callable {
+        return function(RubikaBot $bot) use ($button) {
+            $buttonId = $bot->getButtonId();
+            if ($buttonId === null) return false;
+            return strpos(trim($buttonId), $button) === false;
+        };
+    }
+    public function filterChatId(string $chat_id): callable {
+        return function(RubikaBot $bot) use ($chat_id) {
+            $chatId = $bot->getButtonId();
+            if ($chatId === null) return false;
+            return strpos(trim($chatId), $chat_id) === false;
+        };
+    }
+    public function filterSenderId(string $sender_id): callable {
+        return function(RubikaBot $bot) use ($sender_id) {
+            $senderId = $bot->getButtonId();
+            if ($senderId === null) return false;
+            return strpos(trim($senderId), $sender_id) === false;
+        };
+    }
+    public function andFilter(callable ...$filters): callable {
+        return function(RubikaBot $bot) use ($filters) {
+            foreach ($filters as $f) {
+                if (!$f($bot)) return false;
+            }
+            return true;
+        };
+    }
+    public function orFilter(callable ...$filters): callable {
+        return function(RubikaBot $bot) use ($filters) {
+            foreach ($filters as $f) {
+                if ($f($bot)) return true;
+            }
+            return false;
+        };
+    }
+    public function onMessage(callable $filter, callable $callback): void {
+        if ($filter($this)) {
+            $this->handlers[] = fn() => $callback($this);
+        }
+    }
+    public function run(): void {
+        foreach ($this->handlers as $handler) {
+            $handler(); 
+        }
+    }
     private function validateParams(array $params, array $required): void {
         foreach ($required as $field) {
             if (!isset($params[$field])) {

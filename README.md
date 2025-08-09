@@ -123,6 +123,11 @@ $bot->run();
 ## مثال کامل
 
 ```php
+require_once 'RubikaBot.php';
+
+use RubikaBot\Bot;
+use RubikaBot\Button;
+use RubikaBot\Keypad;
 $bot = new Bot("TOKEN");
 
 $bot->onMessage($bot->filterCommand("start"), function($bot) {

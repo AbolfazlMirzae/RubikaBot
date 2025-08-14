@@ -143,7 +143,35 @@ $bot->run();
 ```
 
 ---
+## نمونه استفاده از جوین خودکار و باز کردن لینک
+```php
+<?php
+require_once 'RubikaBot.php';
+use RubikaBot\{
+    Bot, 
+    Keypad, 
+    Button, 
+    ButtonLink, 
+    ButtonLinkType, 
+    JoinChannelData
+};
+$bot = new Bot('TOKEN');
 
+$keypad = Keypad::make();
+$keypad->row()
+    ->add(Button::simple("btn1", "دکمه ساده"))
+    ->add(Button::link("btn2", "جوین", ButtonLinkType::JoinChannel, ButtonLink::make(
+    null, 
+    'joinchannel',
+    JoinChannelData::make("rubiphp", true),
+    null
+)));
+$keypad->row()
+    ->add(Button::link("btn3", "لینک", ButtonLinkType::URL, ButtonLink::make("https://github.com/AbolfazlMirzae/RubikaBot", ButtonLinkType::URL)));
+
+$bot->message('test')->inlineKeypad($keypad->toArray())->reply();
+```
+---
 ## نکات مهم
 
 - هر متد با return self قابلیت chain شدن دارد.

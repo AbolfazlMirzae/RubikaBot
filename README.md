@@ -1,184 +1,270 @@
-# RubikaBot PHP Library
+# RubikaBot - داکیومنت کامل کلاس Bot
 
-کتابخانه RubikaBot یک فریم‌ورک ساده و قدرتمند برای ساخت بات روی پلتفرم Rubika با PHP است. این کتابخانه امکانات ارسال پیام، فایل، نظرسنجی، مکان، مخاطب و مدیریت انواع کلیدهای بات را فراهم می‌کند.  
-در ادامه راهنمای استفاده و معرفی کلاس‌ها و متدهای مهم آورده شده است.
-
----
-
-## کلاس اصلی: `Bot`
-
-### سازنده
-```php
-public function __construct(string $token, array $config = [])
-```
-ایجاد نمونه بات با توکن اختصاصی و تنظیمات دلخواه:
-- `timeout`: زمان تایم‌اوت درخواست‌ها
-- `max_retries`: تعداد تلاش مجدد
-- `parse_mode`: فرمت متن (Markdown)
+این داکیومنت راهنمای استفاده از کلاس `RubikaBot\Bot` برای توسعه ربات در پلتفرم روبیکا است. فانکشن‌های غیرضروری حذف شده‌اند و فقط قابلیت‌های اصلی پوشش داده شده‌اند.
 
 ---
 
-### ارسال پیام
-```php
-$bot->chat($chat_id)->message("متن پیام")->send();
-```
-- `chat($chat_id)`: تعیین شناسه چت
-- `message($text)`: تعیین متن پیام
-- `send()`: ارسال پیام
+## معرفی
+
+کلاس `Bot` برای ساخت و مدیریت ربات در روبیکا با امکانات زیر طراحی شده است:
+
+- ارسال پیام، فایل، موقعیت مکانی، مخاطب، نظرسنجی
+- ویرایش و حذف پیام‌ها
+- فوروارد پیام
+- مدیریت کیبورد سفارشی و اینلاین
+- دریافت اطلاعات گفتگو و کاربر
+- دریافت آپدیت‌ها و پردازش رویدادها
 
 ---
 
-### ارسال فایل
-```php
-$bot->chat($chat_id)->file($file_path)->caption("توضیح فایل")->sendFile();
-```
-- `file($path)`: مسیر فایل
-- `caption($caption)`: توضیح فایل (اختیاری)
-- `sendFile()`: ارسال فایل
-
----
-
-### ارسال نظرسنجی
-```php
-$bot->chat($chat_id)->poll("سوال", ["گزینه1","گزینه2"])->sendPoll();
-```
-- `poll($question, $options)`: سوال و گزینه‌ها
-- `sendPoll()`: ارسال نظرسنجی
-
----
-
-### ارسال موقعیت مکانی
-```php
-$bot->chat($chat_id)->location($lat, $lng)->sendLocation();
-```
-- `location($lat, $lng)`: موقعیت جغرافیایی
-- `sendLocation()`: ارسال موقعیت
-
----
-
-### ارسال مخاطب
-```php
-$bot->chat($chat_id)->contact("نام", "شماره")->sendContact();
-```
-- `contact($firstName, $phoneNumber)`: مخاطب
-- `sendContact()`: ارسال مخاطب
-
----
-
-### ارسال و مدیریت کلیدها
-- کلیدهای چت (`chatKeypad`) و کلیدهای خطی (`inlineKeypad`)  
-نمونه ساخت کیپد:
-```php
-$keypad = Keypad::make()
-    ->addRow((new KeypadRow())->add(Button::simple("id1", "دکمه 1")))
-    ->addRow((new KeypadRow())->add(Button::simple("id2", "دکمه 2")));
-$bot->chat($chat_id)->chatKeypad($keypad->toArray())->send();
-```
-
----
-
-### فیلتر و هندل کردن پیام‌ها
-برای تعریف هندلر پیام با فیلتر:
-```php
-$bot->onMessage($bot->filterCommand("start"), function($bot) {
-    $bot->chat($bot->getChatId())->message("خوش آمدید")->send();
-});
-$bot->run();
-```
-فیلترهای آماده:
-- `filterText($text)`
-- `filterCommand($command)`
-- `filterButton($buttonId)`
-- `filterChatId($chatId)`
-- `filterSenderId($senderId)`
-
----
-
-### دیگر امکانات
-- دریافت اطلاعات خود بات: `getMe()`
-- دریافت اطلاعات چت: `getChat(['chat_id' => ...])`
-- دریافت آپدیت‌ها: `getUpdates()`
-- مدیریت فایل و دانلود: `getFile($file_id)`, `downloadFile($file_id, $to)`
-- تنظیم دستورات بات: `setCommands(['bot_commands' => ...])`
-- مدیریت Endpoints: `updateBotEndpoints(['url'=>..., 'type'=>...])`
-
----
-
-## کلاس‌های کمکی
-
-### Button
-نماینده یک دکمه در کیپد. متدهای استاتیک مانند:
-- `Button::simple($id, $text)`
-- `Button::selection($id, $title, $items)`
-- `Button::calendar($id, $title, $type)`
-و ...  
-برای ساخت انواع دکمه (متن، انتخاب، تقویم، فایل، لینک و ...)
-
-### KeypadRow و Keypad
-- `KeypadRow`: یک ردیف از دکمه‌ها
-- `Keypad`: مجموعه‌ای از ردیف‌ها و تنظیمات کیپد
-
----
-
-## مثال کامل
+## ساخت نمونه Bot
 
 ```php
-require_once 'RubikaBot.php';
-
 use RubikaBot\Bot;
-use RubikaBot\Button;
-use RubikaBot\Keypad;
-$bot = new Bot("TOKEN");
 
-$bot->onMessage($bot->filterCommand("start"), function($bot) {
-    $keypad = Keypad::make()
-        ->addRow((new KeypadRow())->add(Button::simple("id1", "دکمه 1")));
-    $bot->chat($bot->getChatId())
-        ->message("خوش آمدید!")
-        ->chatKeypad($keypad->toArray())
-        ->send();
-});
+$bot = new Bot('توکن-ربات');
+```
 
-$bot->run();
+می‌توانید پارامتر دوم را برای تنظیمات مانند timeout و max_retries ارسال کنید.
+
+---
+
+## ارسال پیام
+
+```php
+$bot->chat($chat_id)
+    ->message('متن پیام')
+    ->send();
+```
+
+- `chat($chat_id)` : تعیین آی‌دی چت مقصد
+- `message($text)` : تعیین متن پیام
+- `send()` : ارسال پیام متنی
+
+### ارسال پیام پاسخ به یک پیام
+
+```php
+$bot->chat($chat_id)
+    ->message('پاسخ')
+    ->replyTo($message_id)
+    ->send();
 ```
 
 ---
-## نمونه استفاده از جوین خودکار و باز کردن لینک
+
+## ارسال فایل
+
 ```php
-<?php
-require_once 'RubikaBot.php';
-use RubikaBot\{
-    Bot, 
-    Keypad, 
-    Button, 
-    ButtonLink, 
-    ButtonLinkType, 
-    JoinChannelData
-};
-$bot = new Bot('TOKEN');
+$bot->chat($chat_id)
+    ->file('/path/to/file.jpg')
+    ->caption('توضیح فایل')
+    ->sendFile();
+```
+
+- `file($path)` : مسیر فایل روی سرور
+- `caption($caption)` : توضیح فایل (اختیاری)
+- `sendFile()` : ارسال فایل
+
+### ارسال فایل با file_id (در صورتی که قبلاً آپلود شده)
+
+```php
+$bot->chat($chat_id)
+    ->file_id('file_id')
+    ->file_type('Image')
+    ->sendFile();
+```
+
+---
+
+## ارسال مکان
+
+```php
+$bot->chat($chat_id)
+    ->location($lat, $lng)
+    ->sendLocation();
+```
+
+---
+
+## ارسال مخاطب
+
+```php
+$bot->chat($chat_id)
+    ->contact('نام مخاطب', 'شماره تلفن')
+    ->sendContact();
+```
+
+---
+
+## ارسال نظرسنجی
+
+```php
+$bot->chat($chat_id)
+    ->poll('سوال؟', ['گزینه ۱', 'گزینه ۲', 'گزینه ۳'])
+    ->sendPoll();
+```
+
+---
+
+## فوروارد پیام
+
+```php
+$bot->forwardFrom($from_chat_id)
+    ->messageId($message_id)
+    ->forwardTo($to_chat_id)
+    ->forward();
+```
+
+---
+
+## ویرایش پیام متنی
+
+```php
+$bot->chat($chat_id)
+    ->messageId($message_id)
+    ->message('متن جدید')
+    ->sendEditText();
+```
+
+---
+
+## حذف پیام
+
+```php
+$bot->chat($chat_id)
+    ->messageId($message_id)
+    ->sendDelete();
+```
+
+---
+
+## کار با کیبورد
+
+### ساخت کیبورد سفارشی
+
+```php
+use RubikaBot\Keypad;
+use RubikaBot\Button;
 
 $keypad = Keypad::make();
 $keypad->row()
-    ->add(Button::simple("btn1", "دکمه ساده"))
-    ->add(Button::link("btn2", "جوین", ButtonLinkType::JoinChannel, ButtonLink::make(
-    null, 
-    'joinchannel',
-    JoinChannelData::make("rubiphp", true),
-    null
-)));
-$keypad->row()
-    ->add(Button::link("btn3", "لینک", ButtonLinkType::URL, ButtonLink::make("https://github.com/AbolfazlMirzae/RubikaBot", ButtonLinkType::URL)));
+        ->add(Button::simple('btn1', 'دکمه ۱'))
+        ->add(Button::simple('btn2', 'دکمه ۲'))
+    );
 
-$bot->message('test')->inlineKeypad($keypad->toArray())->reply();
+$bot->chat($chat_id)
+    ->message('انتخاب کنید:')
+    ->chatKeypad($keypad->toArray())
+    ->send();
 ```
+
+### کیبورد اینلاین
+
+```php
+$bot->chat($chat_id)
+    ->message('انتخاب کنید:')
+    ->inlineKeypad($keypad->toArray())
+    ->send();
+```
+
 ---
+
+## دریافت اطلاعات چت و کاربر
+
+```php
+$bot->getChat(['chat_id' => $chat_id]);
+$type = $bot->getChatType(); // نوع چت (User, Group, Channel, Bot)
+$name = $bot->getFirstName();
+$username = $bot->getUserName();
+```
+
+---
+
+## دریافت اطلاعات پیام دریافتی
+
+- `getUpdate()` : دریافت آپدیت فعلی
+- `getChatId()` : آی‌دی چت پیام دریافتی
+- `getMessageId()` : آی‌دی پیام دریافتی
+- `getSenderId()` : آی‌دی ارسال کننده
+- `getText()` : متن پیام دریافتی
+- `getFileId()` : آی‌دی فایل پیام دریافتی
+- ...
+
+---
+
+## مدیریت رویدادها (هندلرها)
+
+برای پاسخ به پیام خاص:
+
+```php
+$bot->onMessage(
+    $bot->filterText('/start'),
+    function(Bot $bot) {
+        $bot->chat($bot->getChatId())
+            ->message('سلام! خوش آمدید')
+            ->send();
+    }
+);
+$bot->run();
+```
+
+---
+
+## دریافت اطلاعات ربات
+
+```php
+$bot->getMe();
+```
+
+---
+
 ## نکات مهم
 
-- هر متد با return self قابلیت chain شدن دارد.
-- پس از هر ارسال، مقادیر Builder ریست می‌شوند.
-- خطاهای ورودی با Exception مدیریت می‌شوند.
+- تمام متدها به صورت chainable هستند و می‌توانند پشت سر هم فراخوانی شوند.
+- در صورت نبود پارامترهای ضروری، خطای InvalidArgumentException صادر می‌شود.
+- برای استفاده از کیبوردها و دکمه‌ها، کلاس‌های Button و Keypad به کار می‌روند.
+- برای فیلتر کردن پیام‌ها از متدهای filter استفاده کنید و هندلرها را با onMessage ثبت نمایید.
 
 ---
 
-### نویسنده
-- توسعه‌دهنده: AbolfazlMirzae
+## Enumها
+
+```php
+enum ChatType: string {
+    case USER = 'User';
+    case GROUP = 'Group';
+    case CHANNEL = 'Channel';
+    case BOT = 'Bot';
+}
+```
+
+---
+
+## مثال کامل بوت ساده
+
+```php
+$bot = new Bot('TOKEN');
+
+$bot->onMessage(
+    $bot->filterCommand('start'),
+    function(Bot $bot) {
+        $bot->chat($bot->getChatId())
+            ->message('سلام!')
+            ->send();
+    }
+);
+
+$bot->run();
+```
+
+---
+
+## کلاس‌های کاربردی (Button, Keypad و ...)
+
+برای ساخت کیبورد و دکمه‌های مختلف از کلاس‌های Button و Keypad استفاده کنید. به مثال‌های بالا مراجعه شود.
+
+---
+
+## جمع‌بندی
+
+این کلاس امکانات اصلی برای ساخت انواع ربات روبیکا را فراهم کرده است و با متدهای chainable توسعه را بسیار ساده می‌کند. برای توسعه حرفه‌ای‌تر می‌توانید قابلیت‌های خود را با استفاده از همین متدهای اصلی گسترش دهید.

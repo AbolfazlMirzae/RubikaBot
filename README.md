@@ -1,4 +1,4 @@
-# RubikaBot
+### RubikaBot
 ---
 
 ## معرفی

@@ -176,19 +176,27 @@ $bot->onMessage(Filters::command('start'), function(Message $message){
     $keypad->row()->add($btn1)->add($btn2));
     $message->message('یکی از گزینه‌ها را انتخاب کنید.')
         ->inlineKeypad($keypad->toArray())
+        ->chatKeypad($keypad->toArray())
         ->reply();
 });
 
 // هندلر روی دکمه ثبت نام
-$bot->onMessage(Filters::button('btn1'), function(Message $message){
+$bot->onMessage(Filters::button('btn1') // Inline Keypad, function(Message $message){
     $message->message('لطفا نام خود را وارد نمایید:')->reply();
 });
 
 // هندلر روی دکمه تقویم
-$bot->onMessage(Filters::button('btn2'), function(Message $message){
+$bot->onMessage(Filters::button('btn2') //inline Keypad, function(Message $message){
     $message->message('تاریخ انتخاب شد!')->reply();
 });
+$bot->onMessage(Filters::text('ثبت نام') //chatKeypad, function(Message $message){
+    $message->message('لطفا نام خود را وارد نمایید:')->reply();
+});
 
+// هندلر روی دکمه تقویم
+$bot->onMessage(Filters::text('انتخاب تاریخ') //chatKeypad, function(Message $message){
+    $message->message('تاریخ انتخاب شد!')->reply();
+});
 // ارسال فایل به کاربر
 $bot->onMessage(Filters::command('file'), function(Message $message){
     $message->file('test.jpg')->caption('این یک تصویر است')->replyFile();

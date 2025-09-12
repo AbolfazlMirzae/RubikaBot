@@ -69,7 +69,7 @@ enum ChatType: string {
 
 ---
 
-## ۳. کلاس Message
+## ۳. کلاس Bot مخصوص **onMessage**
 
 ### هدف:
 دریافت داده پیام جاری و متدهای پاسخ سریع به همان پیام.
@@ -181,44 +181,44 @@ $bot->onMessage(Filters::command('start'), function(Message $message){
 });
 
 // هندلر روی دکمه ثبت نام
-$bot->onMessage(Filters::button('btn1') // Inline Keypad, function(Message $message){
+$bot->onMessage(Filters::button('btn1') // Inline Keypad, function(Bot $message){
     $message->message('لطفا نام خود را وارد نمایید:')->reply();
 });
 
 // هندلر روی دکمه تقویم
-$bot->onMessage(Filters::button('btn2') //inline Keypad, function(Message $message){
+$bot->onMessage(Filters::button('btn2') //inline Keypad, function(Bot $message){
     $message->message('تاریخ انتخاب شد!')->reply();
 });
-$bot->onMessage(Filters::text('ثبت نام') //chatKeypad, function(Message $message){
+$bot->onMessage(Filters::text('ثبت نام') //chatKeypad, function(Bot $message){
     $message->message('لطفا نام خود را وارد نمایید:')->reply();
 });
 
 // هندلر روی دکمه تقویم
-$bot->onMessage(Filters::text('انتخاب تاریخ') //chatKeypad, function(Message $message){
+$bot->onMessage(Filters::text('انتخاب تاریخ') //chatKeypad, function(Bot $message){
     $message->message('تاریخ انتخاب شد!')->reply();
 });
 // ارسال فایل به کاربر
-$bot->onMessage(Filters::command('file'), function(Message $message){
+$bot->onMessage(Filters::command('file'), function(Bot $message){
     $message->file('test.jpg')->caption('این یک تصویر است')->replyFile();
 });
 
 // ارسال لوکیشن به کاربر
-$bot->onMessage(Filters::command('location'), function(Message $message){
+$bot->onMessage(Filters::command('location'), function(Bot $message){
     $message->location(35.6892, 51.3890)->replyLocation();
 });
 
 // ارسال مخاطب به کاربر
-$bot->onMessage(Filters::command('contact'), function(Message $message){
+$bot->onMessage(Filters::command('contact'), function(Bot $message){
     $message->contact('علی', '09120000000')->replyContact();
 });
 
 // هندلر اسپم
-$bot->onMessage(Filters::spam(5, 10, 120), function(Message $message){
+$bot->onMessage(Filters::spam(5, 10, 120), function(Bot $message){
     $message->message('پیام زیاد فرستادی!')->reply();
 });
 
 // هندلر فقط برای گروه‌ها
-$bot->onMessage(Filters::ChatTypes(ChatType::GROUP), function(Message $message){
+$bot->onMessage(Filters::ChatTypes(ChatType::GROUP), function(Bot $message){
     $message->message('این پیام فقط برای گروه است.')->reply();
 });
 
@@ -230,7 +230,7 @@ $bot->run();
 
 ## نکات و توصیه‌ها
 
-- **onMessage**: همیشه فیلتر و تابع را با هم بدهید، تابع دوم باید Bot یا Message دریافت کند.
+- **onMessage**: همیشه فیلتر و تابع را با هم بدهید، تابع دوم باید Bot دریافت کند
 - **send، sendFile، sendLocation و ...**: قبل از آن chat_id را ست کنید.
 - **Button و Keypad**: برای ساخت دکمه و کیپد حرفه‌ای استفاده کنید.
 - **فیلتر اسپم**: بلافاصله پیام اسپم را برای کاربر ارسال کنید.

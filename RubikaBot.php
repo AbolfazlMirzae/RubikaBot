@@ -11,7 +11,7 @@ class Bot
         'timeout' => 30,
         'max_retries' => 3,
         'parse_mode' => 'Markdown',
-        'spam' => true,
+        'spam' => false,
     ];
     protected array $update = [];
     protected array $chat = [];
